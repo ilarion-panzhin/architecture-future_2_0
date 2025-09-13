@@ -9,6 +9,8 @@
 
 ## Контейнеры (C4: уровень контейнеров)
 
+![alt text](container-c4.png)
+
 1. Портал самообслуживания (Data Portal)  
 BI-инструмент и конструктор отчетов  
 Семантический слой (dbt metrics, semantic layer, BI semantic model)  
