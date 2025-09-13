@@ -1,0 +1,95 @@
+@startuml
+' C4-PlantUML Container diagram for To-Be (grouped)
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title Будущее 2.0 — Целевая архитектура через год (C4: Containers, сгруппировано)
+
+Person(bizUser, "Бизнес-пользователь", "Строит отчеты и дашборды в портале самообслуживания")
+Person_Ext(ops, "Оператор клиники", "Работа с операционными системами")
+
+System_Boundary(s1, "Платформа данных «Будущее 2.0»") {
+
+  Container_Boundary(exp, "Experience & Access") {
+    Container(dp, "Data Portal", "BI / Semantic Layer / Self-Service", "Портал самообслуживания, семантические модели и конструктор отчетов")
+    Container(api, "API & Integration Layer", "REST/gRPC + Kafka", "Контракты и схемы, события, ACL для легаси")
+  }
+
+  Container_Boundary(core, "Core Data Platform") {
+    Container(lh, "Lakehouse Storage", "Object Storage + Table Format", "Зоны bronze/silver/gold; ACID-таблицы (Iceberg/Delta/Hudi), time-travel")
+    Container(proc, "Processing & Orchestration", "Spark/Flink + Airflow", "Batch и Stream обработка, CDC, DQ, SLA-мониторинг")
+  }
+
+  Container_Boundary(gov, "Governance & Security") {
+    Container(dc, "Data Catalog & Governance", "Data Catalog / Lineage / Policies", "Каталог, глоссарий, владение, lineage, доступы и политики")
+    Container(sec, "Security & Compliance", "KMS/IAM/DLP/Masking", "Шифрование, аудит, RBAC/ABAC, PII/PHI-контролы")
+  }
+
+  Container_Boundary(products, "Domain Data Products") {
+    Container(dp_health, "Healthcare Data Product", "Curated Tables", "Операционные агрегаты клиник без PHI в витрине")
+    Container(dp_ai, "AI/Imaging Data Product", "Objects + Feature Tables", "Медизображения, фичи и эмбеддинги. Доступ только для ИИ")
+    Container(dp_fin, "Fintech Data Product", "Curated Tables", "Счета, платежи, кредиты, риск-скоринг")
+    Container(dp_pharma, "Pharma Data Product", "Curated Tables", "Каталоги препаратов, поставки, запасы")
+    Container(dp_devices, "Med-Devices Data Product", "Curated Streams/Tables", "Телеметрия, события, логистика оборудования")
+  }
+
+  Container_Boundary(transition, "Transition") {
+    Container(legacy, "Legacy DWH", "SQL Server 2008", "Монолит на переходный период. Постепенная миграция витрин")
+  }
+}
+
+System_Ext(clinOps, "Клинические операционные системы", "EHR/EMR, расписания, инвентарь")
+System_Ext(aiSvc, "ИИ-сервисы", "Тренировка/инференс моделей на Python")
+System_Ext(bank, "Финтех-сервисы", "Core Banking, платежи, счета, кредиты")
+System_Ext(pharma, "Фармацевтические системы", "Производство и дистрибуция")
+System_Ext(devices, "Медицинские устройства", "Телеметрия и события с оборудования")
+System_Ext(biConsumer, "Внешние аналитические потребители", "Внешние приложения и отчеты")
+
+' Experience
+Rel(bizUser, dp, "Self-service отчеты и дашборды")
+Rel(biConsumer, dp, "Доступ к витрине по моделям и датасетам")
+
+' Governance/Security
+Rel(dp, dc, "Поиск датасетов, бизнес-глоссарий, lineage")
+Rel(dc, lh, "Скан и регистрация метаданных")
+Rel(sec, dp, "SSO, RBAC/ABAC, аудит")
+Rel(sec, lh, "Шифрование, ключи, маскирование")
+
+' Core flows
+Rel(dp, lh, "Запросы к curated данным", "SQL/DAX/MDX")
+Rel(api, lh, "Схемно-контрактная запись/чтение")
+Rel(api, proc, "Триггеры и события")
+Rel(proc, lh, "Чтение/запись batch и stream")
+
+' Products publishing
+Rel(proc, dp_health, "Публикация curated витрины")
+Rel(proc, dp_fin, "Публикация curated витрины")
+Rel(proc, dp_pharma, "Публикация curated витрины")
+Rel(proc, dp_devices, "Публикация curated витрины")
+Rel(proc, dp_ai, "Публикация фич и объектов")
+
+' External integrations
+Rel(clinOps, api, "CDC/Events", "операционные данные клиник")
+Rel(bank, api, "CDC/Events", "финансовые данные")
+Rel(pharma, api, "Batch/Events", "номенклатура, поставки")
+Rel(devices, api, "Streams", "телеметрия")
+
+' AI usage
+Rel(aiSvc, dp_ai, "Чтение тренировочных данных и фич")
+Rel(aiSvc, api, "Публикация инференс-событий", "events")
+
+' Transition links
+Rel(legacy, dp, "Часть старых отчетов", "SQL")
+Rel(legacy, proc, "Экстракция для миграции витрин", "batch")
+Rel(api, legacy, "Интеграции на переходный период")
+
+' Governance of products
+Rel(dc, dp_health, "Регистрация data product")
+Rel(dc, dp_fin, "Регистрация data product")
+Rel(dc, dp_pharma, "Регистрация data product")
+Rel(dc, dp_devices, "Регистрация data product")
+Rel(dc, dp_ai, "Регистрация data product")
+
+Rel(ops, clinOps, "Работа в операционных системах")
+
+SHOW_LEGEND()
+@enduml
