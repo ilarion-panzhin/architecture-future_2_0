@@ -8,10 +8,13 @@
 | Говернанс | Data Catalog (Apache Atlas, Collibra, DataHub) | Data Quality frameworks (Great Expectations) | Data Contracts tooling | Кастомные Excel-реестры |
 | Аналитика и BI | Power BI, Semantic Layer | Self-service portal prototype | Looker, Metriql exploration | Кастомные отчеты поверх DWH |
 | Безопасность | IAM, RBAC, ABAC, KMS, DLP | Data Tokenization, De-identification | Attribute-based access control в BI | Локальная авторизация в приложениях |
+| AI и ML | Python ML-стек (scikit-learn, TensorFlow, PyTorch), Jupyter, MLflow | Feature Store для ML (Feast, Tecton), ML Observability (Evidently, WhyLabs) | AutoML решения, Federated Learning, LLM-интеграция для медданных | Самописные скрипты без версионирования, модели без мониторинга |
 
 --- 
 
 # Роадмап
+
+![alt text](Roadmap_Future_2_0.drawio.png)
 
 ## Этап 1 (0–3 мес.)
 Создание Data Catalog и Governance (пилот на финансовых данных)  
